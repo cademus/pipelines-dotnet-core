@@ -3,6 +3,10 @@
 
 name: .NET
 
+permissions:
+  id-token: write
+  contents: read
+
 on:
   push:
     branches: [ "master" ]
@@ -34,5 +38,22 @@ jobs:
         name: webapp
         path: website/**
         if-no-files-found: warn
-              
-          
+  deploy:
+    runs-on: ubuntu-latest
+    environment: prd
+    needs: build
+    steps:
+    - name: Download a Build Artifact
+      uses: actions/download-artifact@v4.4.3
+      with:
+        name: webapp
+        path: webapp
+    - name: Deploy web app
+      uses: azure/webapps-deploy@v3.0.1
+      with:
+        app-name: pul-yaml-macr
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        package: webapp
+  
